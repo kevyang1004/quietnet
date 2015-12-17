@@ -17,8 +17,10 @@ sigil = [int(x) for x in options.sigil]
 frames_per_buffer = chunk * 10
 
 in_length = 4000
+# length of audio frames
 # raw audio frames
 in_frames = Queue.Queue(in_length)
+# just length
 # the value of the fft at the frequency we care about
 points = Queue.Queue(in_length)
 bits = Queue.Queue(in_length / frame_length)
@@ -28,6 +30,7 @@ wait_for_frames_timeout = 0.1
 wait_for_point_timeout = 0.1
 wait_for_byte_timeout = 0.1
 
+# time of waiting
 # yeeeep this is just hard coded
 bottom_threshold = 8000
 
@@ -77,6 +80,7 @@ def process_points():
                 cur_points = []
                 bits.put(bit)
                 last_bits.append(bit)
+            # frame length
             # if we've only seen low bits for a while assume the next message might not be on the same bit boundary
             if len(last_bits) > 3:
                 if sum(last_bits) == 0:
@@ -90,6 +94,7 @@ def process_points():
 def process_bits():
     while True:
         cur_bits = []
+        # answering whether true or false
         # while the last two characters are not the sigil
         while len(cur_bits) < 2 or cur_bits[-len(sigil):len(cur_bits)] != sigil:
             try:
@@ -99,6 +104,7 @@ def process_bits():
         sys.stdout.write(psk.decode(cur_bits[:-len(sigil)]))
         sys.stdout.flush()
 
+# answering it's false
 # start the queue processing threads
 processes = [process_frames, process_points, process_bits]
 threads = []
